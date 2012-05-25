@@ -77,28 +77,76 @@ function onDeviceReady()
 	l10n.initLanguages();
 	if (window.plugins.pinchZoom !== undefined) {
 		// TODO: only enable this while on the map view?
-		(function() {
-			var origDistance;
-			window.plugins.pinchZoom.addEventListener('pinchzoom', function(event) {
-				if (geo.map) {
-					if (event.type == "pinchzoomstart") {
-						origDistance = event.distance;
-					}
-					else if (event.type == "pinchzoommove" || event.type == "pinchzoomend") {
-						var ratio = event.distance / origDistance;
-						if (ratio < 0.67) {
-							// Zooming out
-							origDistance = event.distance;
-							geo.map.zoomOut();
-						} else if (ratio > 1.5) {
-							// Zooming in
-							origDistance = event.distance;
-							geo.map.zoomIn();
+		// Map our pinch-zoom events to touch events
+		// Only need to do it on Android 2.x
+		if (navigator.userAgent.match(/Android 2/)) {
+			(function() {
+				var origDistance;
+				var $a = $('<div>').attr('style', 'width: 4px; height: 4px; background-color: red; position: absolute').appendTo('body');
+				var $b = $('<div>').attr('style', 'width: 4px; height: 4px; background-color: purple; position: absolute').appendTo('body');
+				var zoom;
+				window.plugins.pinchZoom.addEventListener('pinchzoom', function(event) {
+					if (geo.map) {
+						//console.log([event.x0, event.y0, event.x1, event.y1].join(', '));
+						var ratio = 1.5;
+						$a.css('left', event.x0 / ratio + 'px');
+						$a.css('top', event.y0 / ratio + 'px');
+						$b.css('left', event.x1 / ratio + 'px');
+						$b.css('top', event.y1 / ratio + 'px');
+					
+						var evname;
+						if (event.type == "pinchzoomstart") {
+							evname = 'touchstart';
+						} else if (event.type == "pinchzoommove") {
+							evname = 'touchmove';
+						} else if (event.type == "pinchzoomend") {
+							evname = 'touchend';
+						}
+						var touches = [
+							{
+								pageX: event.x0 / ratio,
+								pageY: event.y0 / ratio
+							},
+							{
+								pageX: event.x1 / ratio,
+								pageY: event.y1 / ratio
+							}
+						];
+						/*
+						var ev = document.createEvent('TouchEvent');
+						ev.initTouchEvent(evname,
+							true, // canBubble,
+							true // cancelable
+						);
+						ev.view = window;
+						ev.altKey = false;
+						ev.ctrlKey = false;
+						ev.shiftKey = false;
+						ev.metaKey = false;
+						ev.touches = touches;
+						*/
+						console.log('FIRING TOUCH EVENT');
+						//geo.map._container.dispatchEvent(ev);
+						
+						var ev = {
+							touches: touches
+						};
+						if (!zoom) {
+							zoom = new L.Map.TouchZoom(geo.map);
+							zoom.initialize(geo.map);
+							zoom.enable();
+						}
+						if (event.type == "pinchzoomstart") {
+							zoom._onTouchStart(ev);
+						} else if (event.type == "pinchzoommove") {
+							zoom._onTouchMove(ev);
+						} else if (event.type == "pinchzoomend") {
+							zoom._onTouchEnd(ev);
 						}
 					}
-				}
-			});
-		})();
+				});
+			})();
+		}
 	}
 }
 

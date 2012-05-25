@@ -54,13 +54,13 @@ public class PinchZoom extends Plugin implements OnTouchListener {
         	zoomActive = true;
         	zoomInitialDist = fingerDistance(event);
         	zoomFinalDist = zoomInitialDist;
-        	sendUpdate("pinchzoomstart");
+        	sendUpdate("pinchzoomstart", event);
         	return true;
         case MotionEvent.ACTION_UP:
         case MotionEvent.ACTION_POINTER_UP:
         	if (zoomActive) {
         		zoomActive = false;
-	        	sendUpdate("pinchzoomend");
+	        	sendUpdate("pinchzoomend", event);
         		return true;
         	} else {
         		return false;
@@ -68,7 +68,7 @@ public class PinchZoom extends Plugin implements OnTouchListener {
         case MotionEvent.ACTION_MOVE:
         	if (zoomActive) {
 	        	zoomFinalDist = fingerDistance(event);
-	        	sendUpdate("pinchzoommove");
+	        	sendUpdate("pinchzoommove", event);
 	        	return true;
         	} else {
         		return false;
@@ -77,12 +77,16 @@ public class PinchZoom extends Plugin implements OnTouchListener {
         return false;
     }
 
-	private void sendUpdate(String eventType) {
+	private void sendUpdate(String eventType, MotionEvent event) {
 		JSONObject info = new JSONObject();
 		try {
 			info.put("type", eventType);
 			info.put("startDistance", zoomInitialDist);
 			info.put("distance", zoomFinalDist);
+			info.put("x0", event.getX(0));
+			info.put("y0", event.getY(0));
+			info.put("x1", event.getX(1));
+			info.put("y1", event.getY(1));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

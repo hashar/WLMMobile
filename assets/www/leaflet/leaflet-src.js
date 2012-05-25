@@ -4541,7 +4541,13 @@ L.Map.TouchZoom = L.Handler.extend({
 	},
 
 	_onTouchStart: function (e) {
+		console.log('HEY HEY HEY START');
 		if (!e.touches || e.touches.length !== 2 || this._map._animatingZoom) {
+			if (!e.touches) {
+				console.log('NO e.touches');
+			}
+			console.log('e.touches.length = ' + e.touches.length);
+			console.log('aborting for some reason');
 			return;
 		}
 
@@ -4565,6 +4571,7 @@ L.Map.TouchZoom = L.Handler.extend({
 	},
 
 	_onTouchMove: function (e) {
+		console.log('HEY HEY HEY MOVE');
 		if (!e.touches || e.touches.length !== 2) {
 			return;
 		}
@@ -4598,6 +4605,7 @@ L.Map.TouchZoom = L.Handler.extend({
 	},
 
 	_onTouchEnd: function (e) {
+		console.log('HEY HEY HEY END');
 		if (!this._moved || !this._zooming) {
 			return;
 		}
